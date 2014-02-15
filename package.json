@@ -1,0 +1,39 @@
+{
+  "name": "require-assets-browserify",
+  "version": "0.0.0",
+  "description": "require-assets plugin to extract assets with browserify",
+  "main": "index.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/andreypopp/require-assets-browserify"
+  },
+  "keywords": [
+    "browserify-transform",
+    "browserify-plugin",
+    "browserify",
+    "require-assets"
+  ],
+  "author": "Andrey Popp <8mayday@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/andreypopp/require-assets-browserify/issues"
+  },
+  "homepage": "https://github.com/andreypopp/require-assets-browserify",
+  "dependencies": {
+    "through": "~2.3.4",
+    "resolve": "~0.6.1",
+    "jstransform": "~2.0.3",
+    "esprima-fb": "~2001.1001.0-dev-harmony-fb"
+  },
+  "peerDependencies": {
+    "require-assets": "git+https://github.com/andreypopp/require-assets-browserify.git#master"
+  },
+  "devDependencies": {
+    "semver": "~2.2.1",
+    "mocha": "~1.17.1",
+    "jshint": "~2.4.3"
+  }
+}
