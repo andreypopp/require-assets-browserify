@@ -12,21 +12,30 @@ var NAME = 'requireAssets';
  * Create a new visitor to replace requireAssets(..) calls
  *
  * @public
+ *
+ * @param {String} filename
+ * @param {AssetRegistry} registry
+ * @param {Object} handlers
  */
-function create(filename, registry) {
+function create(filename, registry, handlers) {
   registry = registry || requireAssets.currentRegistry();
 
   var basedir = path.dirname(filename);
 
-  var visitor = function visitRequireAssets(traverse, node, path, state) {
+  var visitor = function visitRequireAssets(traverse, node, p, state) {
     var id = node.arguments[0].value;
-    var url = registry.makeURL(resolve(id, {basedir: basedir}));
+    var filename = resolve(id, {basedir: basedir});
+    var extname = path.extname(filename);
+    var handler = handlers[extname] ? handlers[extname] : defaultHandler;
+    var url = registry.makeURL(filename);
+
     utils.catchup(node.range[0], state);
-    utils.append(JSON.stringify(url), state);
+    utils.append(handler(url, filename, registry), state);
+
     utils.move(node.range[1], state);
   };
 
-  visitor.test = function(node, path, state) {
+  visitor.test = function(node, p, state) {
     return (
       node.type === Syntax.CallExpression && 
       node.callee.type === Syntax.Identifier &&
@@ -37,6 +46,10 @@ function create(filename, registry) {
   };
 
   return visitor;
+}
+
+function defaultHandler(url) {
+  return JSON.stringify(url);
 }
 
 module.exports = create;
