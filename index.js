@@ -2,10 +2,8 @@
 
 var fs            = require('fs');
 var through       = require('through');
-var jstransform   = require('jstransform');
+var transform     = require('require-assets-jstransform');
 var requireAssets = require('require-assets');
-var resolve       = require('resolve/lib/sync');
-var createVisitor = require('./visitor');
 
 /**
  * Browserify entry point, decides which one to activate — transform or plugin.
@@ -28,7 +26,7 @@ module.exports = function requireAssetsBrowserify(b, options) {
  *
  * Command line usage:
  *
- *    % browserify -t require-assets/browserify ./assets.json ] ...
+ *    % browserify -t require-assets-browserify ...
  *
  * @public
  *
@@ -43,7 +41,7 @@ var transform = makeTransform();
  *
  * Command line usage:
  *
- *    % browserify -p [ require-assets/browserify --output ./assets.json ] ...
+ *    % browserify -p [ require-assets-browserify --output ./assets.json ] ...
  *
  * @param {Browserify} b
  * @param {Object} options
@@ -57,14 +55,13 @@ function plugin(b, options) {
       'browserify -p [ require-assets/browserify --output ./url-filename.json ] ...');
   }
 
-  var registry = requireAssets.getRegistry(options);
-  var handlers = getHandlers([].concat(options.handler).filter(Boolean));
+  var registry = registryFromOptions(options);
 
-  b.transform(makeTransform(registry, handlers));
+  b.transform(makeTransform(registry));
 
   b.on('bundle', function(stream) {
     stream.on('end', function() {
-      fs.writeFile(output, JSON.stringify(registry.urlToFilename), function(err) {
+      fs.writeFile(output, JSON.stringify(registry), function(err) {
         if (err) stream.emit('error', err);
       });
     });
@@ -89,47 +86,31 @@ function aggregate(cb) {
 }
 
 /**
- * Resolve and load handlers
- */
-function getHandlers(handlers) {
-  if (!handlers) {
-    return {};
-  // ['ext:id', ...]
-  } else if (Array.isArray(handlers)) {
-    var mapping = {};
-    handlers.forEach(function(handler) {
-      var split = handler.split(':');
-      mapping[split[0]] = require(resolve(split[1]));
-    });
-    return mapping;
-  // {ext: handler, ...}
-  } else {
-    return handlers;
-  }
-}
-
-/**
  * Make new browserify transform which populates the registry.
  *
  * @private
  */
-function makeTransform(registry, handlers) {
+function makeTransform(registry) {
 
   return function(filename, options) {
     options = options || {};
 
-    if (!handlers)
-      handlers = getHandlers([].concat(options.handler).filter(Boolean));
-
-    var registry = registry || requireAssets.getRegistry(options);
+    var registry = registry || registryFromOptions(options);
 
     return aggregate(function(src) {
-      var visitor = createVisitor(filename, registry, handlers);
-      var result = jstransform.transform([visitor], src);
-
-      this.queue(result.code);
+      this.queue(transform(src));
       this.queue(null);
     });
   }
 }
 
+/**
+ * Get registry from options
+ */
+function registryFromOptions(options) {
+  if (options.requireAssets && options.mapping)
+    return options;
+  if (options.prefix || options.root)
+    return requireAssets.createRegistry(options);
+  return require.currentRegistry();
+}

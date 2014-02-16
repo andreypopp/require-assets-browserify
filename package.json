@@ -24,16 +24,15 @@
   "homepage": "https://github.com/andreypopp/require-assets-browserify",
   "dependencies": {
     "through": "~2.3.4",
-    "resolve": "~0.6.1",
-    "jstransform": "~2.0.3",
-    "esprima-fb": "~2001.1001.0-dev-harmony-fb"
+    "require-assets-jstransform": "*"
   },
   "peerDependencies": {
-    "require-assets": "git+https://github.com/andreypopp/require-assets-browserify.git#master"
+    "require-assets": "*"
   },
   "devDependencies": {
     "semver": "~2.2.1",
     "mocha": "~1.17.1",
-    "jshint": "~2.4.3"
+    "jshint": "~2.4.3",
+    "browserify": "~3.30.1"
   }
 }
