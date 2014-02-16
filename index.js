@@ -2,7 +2,7 @@
 
 var fs            = require('fs');
 var through       = require('through');
-var transform     = require('require-assets-jstransform');
+var jstransform   = require('require-assets-jstransform');
 var requireAssets = require('require-assets');
 
 /**
@@ -98,7 +98,12 @@ function makeTransform(registry) {
     var registry = registry || registryFromOptions(options);
 
     return aggregate(function(src) {
-      this.queue(transform(src));
+      try {
+        src = jstransform(src);
+      } catch(err) {
+        return this.emit('error', err);
+      }
+      this.queue(src);
       this.queue(null);
     });
   }
@@ -112,5 +117,5 @@ function registryFromOptions(options) {
     return options;
   if (options.prefix || options.root)
     return requireAssets.createRegistry(options);
-  return require.currentRegistry();
+  return requireAssets.currentRegistry();
 }
